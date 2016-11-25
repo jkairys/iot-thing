@@ -22,7 +22,7 @@ This library requies the aforementioned libraries.
 
 ## Usage
 
-`
+~~~~
 #include <IOThing.h>
 #define WIFI_SSID "my-ssid"
 #define WIFI_PASS "my-password"
@@ -62,4 +62,4 @@ void loop(){
   iot.loop();
 }
 
-`
+~~~~
