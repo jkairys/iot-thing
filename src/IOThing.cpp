@@ -228,3 +228,19 @@ void IOThing::useNTP(char * server){
   NTP.setInterval(IOT_NTP_SYNC_INTERVAL);
   NTP.setTimeZone(this->_timezone + this->_dst);
 }
+
+void IOThing::publish(String topic, String value){
+  char _value[64];
+  value.toCharArray(_value, 64);
+  this->publish(topic, _value);
+}
+
+void IOThing::publish(String topic, float value){
+  char _value[64];
+  String(value,2).toCharArray(_value, 64);
+  this->publish(topic, _value);
+}
+
+void IOThing::publish(String topic, char * value){
+  this->client.publish((String(this->_hostname)+ "/" + topic).c_str(), value);
+}

@@ -90,6 +90,9 @@ public:
   void useMQTT(char * server, IOT_MQTT_CALLBACK_SIGNATURE settings_callback); //, char * topic,  IOT_MQTT_CALLBACK_SIGNATURE callback);
   void useNTP(char * server);
   int topicSubscribe(char * topic, IOT_MQTT_CALLBACK_SIGNATURE);
+  void publish(String topic, String value);
+  void publish(String topic, float value);
+  void publish(String topic, char * value);
 };
 
 /*
