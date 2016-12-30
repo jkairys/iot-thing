@@ -52,10 +52,13 @@ void setup(){
   iot.topicSubscribe("test/things/#",[](String topic, String payload){
     Serial.println("Thing: " + topic + " = " + payload);
   });
-  Serial.println("Subscribing to 'test/people/#'")
+  Serial.println("Subscribing to 'test/people/#'");
   iot.topicSubscribe("test/people/#",[](String topic, String payload){
     Serial.println("Person: " + topic + " = " + payload);
   });
+
+  // this should publish a message to my-first-thing/info
+  iot.publish("info","Hello world!");
 }
 
 void loop(){
