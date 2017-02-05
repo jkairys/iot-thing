@@ -68,6 +68,7 @@ private:
   IOT_MQTT_CALLBACK_SIGNATURE _callback;
   void _raw_mqtt_callback(char * topic, byte* payload, unsigned int length);
   void _reconnectMQTT();
+  int _mqtt_client_connect();
 
   void _iot_settings_callback(String topic, String payload);
   IOT_MQTT_CALLBACK_SIGNATURE _user_settings_callback;
@@ -79,7 +80,9 @@ private:
 
   bool _mqtt_topics_map[IOT_MAX_MQTT_SUBSCRIPTIONS];
 
-
+  char _mqtt_user[32];
+  char _mqtt_password[32];
+  uint16_t _mqtt_port;
 
 
 public:
@@ -87,7 +90,9 @@ public:
   void loop();
   void useWiFi(char * ssid, char * password);
   void useOTA();
-  void useMQTT(char * server, IOT_MQTT_CALLBACK_SIGNATURE settings_callback); //, char * topic,  IOT_MQTT_CALLBACK_SIGNATURE callback);
+  void useMQTT(char * server, IOT_MQTT_CALLBACK_SIGNATURE settings_callback);
+  void useMQTT(char * server, uint16_t port, char * username, char * password, IOT_MQTT_CALLBACK_SIGNATURE settings_callback);
+   //, char * topic,  IOT_MQTT_CALLBACK_SIGNATURE callback);
   void useNTP(char * server);
   int topicSubscribe(char * topic, IOT_MQTT_CALLBACK_SIGNATURE);
   void publish(String topic, String value);

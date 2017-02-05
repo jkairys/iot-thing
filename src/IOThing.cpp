@@ -136,31 +136,38 @@ void IOThing::_raw_mqtt_callback(char * topic, byte * data, unsigned int len){
   this->_mqtt_callbacks[longest_match_id](str_topic, str_payload);
 }
 
+int IOThing::_mqtt_client_connect(){
+  if(strlen(this->_mqtt_password)){
+    return this->client.connect(this->_hostname, this->_mqtt_user, this->_mqtt_password);
+  }else{
+    return this->client.connect(this->_hostname);
+  }
+}
+
 void IOThing::_reconnectMQTT(){
   if (!this->client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (this->client.connect(this->_hostname)) {
-      Serial.println("connected");
+    if (this->_mqtt_client_connect()) {
       this->_mqtt_state = IOT_MQTT_CONNECTED;
-      // Once connected, publish an announcement..
-      //this->client.publish((String(this->_mqtt_topic) + "/status").c_str(), "online");
-      // ... and resubscribe
       this->client.subscribe((String(this->_hostname) + "/settings/#").c_str());
     } else {
-      Serial.print("failed, rc=");
-      Serial.print(this->client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
       delay(5000);
     }
   }
 }
 
+void IOThing::useMQTT(char * server, uint16_t port, char * username, char * password, IOT_MQTT_CALLBACK_SIGNATURE settings_callback){
+  strncpy(this->_mqtt_user, username, 32);
+  strncpy(this->_mqtt_password, password, 32);
+  this->_mqtt_port = port;
+  this->useMQTT(server, settings_callback);
+}
+
 void IOThing::useMQTT(char * server, IOT_MQTT_CALLBACK_SIGNATURE settings_callback){ //char * topic, IOT_MQTT_CALLBACK_SIGNATURE callback){
   // setup MQTT connection
   this->client = PubSubClient(this->espClient);
-  this->client.setServer(server, 1883);
+  this->client.setServer(server, this->_mqtt_port ? this->_mqtt_port : 1883);
   this->client.setCallback([&](char *topic, byte *data, unsigned int len) {
     this->_raw_mqtt_callback(topic, data, len);
   });
