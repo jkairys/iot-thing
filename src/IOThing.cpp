@@ -23,6 +23,7 @@ void IOThing::loop(){
   if(this->_use_ota()) ArduinoOTA.handle();
   // mqtt client
   if(this->_use_mqtt()) this->client.loop();
+  if(this->_use_mqtt()) this->_reconnectMQTT();
   // ESP functions
   yield();
 }
@@ -151,8 +152,6 @@ void IOThing::_reconnectMQTT(){
     if (this->_mqtt_client_connect()) {
       this->_mqtt_state = IOT_MQTT_CONNECTED;
       this->client.subscribe((String(this->_hostname) + "/settings/#").c_str());
-    } else {
-      delay(5000);
     }
   }
 }
