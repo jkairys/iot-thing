@@ -98,6 +98,8 @@ public:
   void publish(String topic, String value);
   void publish(String topic, float value);
   void publish(String topic, char * value);
+  void publish(String topic, String value, bool retained);
+  void publish(String topic, char * value, bool retained);
 };
 
 /*

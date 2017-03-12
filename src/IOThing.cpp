@@ -241,6 +241,12 @@ void IOThing::publish(String topic, String value){
   this->publish(topic, _value);
 }
 
+void IOThing::publish(String topic, String value, bool retained){
+  char _value[64];
+  value.toCharArray(_value, 64);
+  this->publish(topic, _value, retained);
+}
+
 void IOThing::publish(String topic, float value){
   char _value[64];
   String(value,2).toCharArray(_value, 64);
@@ -249,4 +255,8 @@ void IOThing::publish(String topic, float value){
 
 void IOThing::publish(String topic, char * value){
   this->client.publish((String(this->_hostname)+ "/" + topic).c_str(), value);
+}
+
+void IOThing::publish(String topic, char * value, bool retained){
+  this->client.publish((String(this->_hostname)+ "/" + topic).c_str(), value, retained);
 }
