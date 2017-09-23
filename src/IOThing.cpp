@@ -205,11 +205,21 @@ int IOThing::topicSubscribe(char * topic, IOT_MQTT_CALLBACK_SIGNATURE callback){
   return 0;
 };
 
+void IOThing::_log(String msg){
+  char _value[64] = "";
+  msg.toCharArray(_value, 64);
+  this->_log(_value);
+}
+
 void IOThing::_log(char * msg){
   this->client.publish(
     (String(this->_hostname)+"/debug").c_str(),
     msg
   );
+}
+
+bool IOThing::ntpSynced() {
+  return this->_ntp_state == IOT_NTP_SYNC;
 }
 
 void IOThing::useNTP(char * server){

@@ -48,10 +48,6 @@ private:
   uint8_t _mqtt_state;
   uint8_t _ntp_state;
 
-  int8_t _timezone = 10;
-  bool _dst = 1;
-
-
   WiFiClient espClient;
   PubSubClient client;
   TickerScheduler * ts;
@@ -86,6 +82,9 @@ private:
 
 
 public:
+  int8_t _timezone = 10;
+  bool _dst = 1;
+
   IOThing(char * hostname);
   void loop();
   void useWiFi(char * ssid, char * password);
@@ -100,6 +99,8 @@ public:
   void publish(String topic, char * value);
   void publish(String topic, String value, bool retained);
   void publish(String topic, char * value, bool retained);
+  void _log(String msg);
+  bool ntpSynced();
 };
 
 /*
