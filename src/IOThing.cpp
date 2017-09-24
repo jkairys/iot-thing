@@ -59,6 +59,7 @@ void IOThing::useWiFi(char * ssid, char * password){
   Serial.println("Connecting to WiFi");
   WiFi.mode(WIFI_STA);
   Serial.println("Wifi begin for " + String(ssid) + ":"+ String(password));
+  WiFi.hostname(this->_hostname);
   WiFi.begin(ssid, password);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Connection Failed! Rebooting...");
@@ -66,6 +67,7 @@ void IOThing::useWiFi(char * ssid, char * password){
     ESP.restart();
   }
   Serial.println("Wifi OK");
+  Serial.println(WiFi.localIP());
 }
 
 void IOThing::_iot_settings_callback(String topic, String payload){
@@ -219,6 +221,9 @@ void IOThing::_log(char * msg){
 }
 
 bool IOThing::ntpSynced() {
+  if(now() > 365*24*60*60){
+    this->_ntp_state = IOT_NTP_SYNC;
+  }
   return this->_ntp_state == IOT_NTP_SYNC;
 }
 
@@ -227,15 +232,17 @@ void IOThing::useNTP(char * server){
   this->_ntp_state = IOT_NTP_NOSYNC;
   // callback to be run when time sync is obtained
   NTP.onNTPSyncEvent([&](NTPSyncEvent_t error) {
+    //Serial.println("NTP Event");
     if (error) {
-      Serial.print("Time Sync error: ");
+      return;
+      //Serial.print("Time Sync error: ");
       if (error == noResponse)
         Serial.println("NTP server not reachable");
       else if (error == invalidAddress)
         Serial.println("Invalid NTP server address");
     }else {
-      //Serial.print("Got NTP time: ");
-      //Serial.println(NTP.getTimeDateString(NTP.getLastNTPSync()));
+      Serial.print("Got NTP time: ");
+      Serial.println(NTP.getTimeDateString(NTP.getLastNTPSync()));
       this->_ntp_state = IOT_NTP_SYNC;
     }
 

@@ -19,7 +19,7 @@
 #define IOT_WIFI_CONNECTING 2
 #define IOT_WIFI_CONNECTED 3
 
-#define IOT_NTP_SYNC_INTERVAL 300
+#define IOT_NTP_SYNC_INTERVAL 15
 #define IOT_NTP_DISABLED 0
 #define IOT_NTP_NOSYNC 1
 #define IOT_NTP_SYNC 2
@@ -58,7 +58,6 @@ private:
   bool _use_mqtt();
   bool _use_ntp();
   int _subscriptionCount();
-  void _log(char * msg);
 
   //char _mqtt_topic[IOT_MQTT_TOPIC_MAXLEN];
   IOT_MQTT_CALLBACK_SIGNATURE _callback;
@@ -83,7 +82,7 @@ private:
 
 public:
   int8_t _timezone = 10;
-  bool _dst = 1;
+  bool _dst = false;
 
   IOThing(char * hostname);
   void loop();
@@ -100,6 +99,7 @@ public:
   void publish(String topic, String value, bool retained);
   void publish(String topic, char * value, bool retained);
   void _log(String msg);
+  void _log(char * msg);
   bool ntpSynced();
 };
 
