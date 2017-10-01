@@ -115,7 +115,7 @@ void IOThing::_raw_mqtt_callback(char * topic, byte * data, unsigned int len){
       str_subscription = str_subscription.substring(0,str_subscription.length()-1);
     }
     int res = str_topic.indexOf(str_subscription);
-    Serial.println("Compare " + String(topic) + " to pot: " + str_subscription);
+    //Serial.println("Compare " + String(topic) + " to pot: " + str_subscription);
     if(res != -1 && str_subscription.length() > longest_match_len) {
       longest_match_len = str_subscription.length();
       longest_match_id = i;
@@ -271,7 +271,12 @@ void IOThing::publish(String topic, float value){
 }
 
 void IOThing::publish(String topic, char * value){
-  this->client.publish((String(this->_hostname)+ "/" + topic).c_str(), value);
+  if(topic.startsWith("/")){
+    topic = topic.substring(1);
+  }else{
+    topic = String(this->_hostname) + "/" + topic;
+  }
+  this->client.publish(topic.c_str(), value);
 }
 
 void IOThing::publish(String topic, char * value, bool retained){
