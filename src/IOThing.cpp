@@ -4,6 +4,12 @@
 IOThing::IOThing(char * hostname)
 {
     strcpy(this->_hostname, hostname);
+    this->_lastWifiConnected = false;
+    this->_thisWifiConnected = false;
+    this->_wifi_start = 0;
+    strcpy(this->_wifi_passcode, "");
+    strcpy(this->_wifi_ssid, "");
+    this->wifi_watchdog_seconds = 2*10;
     //this->items = new TickerSchedulerItem[size];
     //this->size = size;
 }
@@ -20,11 +26,25 @@ void IOThing::loop(){
   // task scheduler
   //ts.update();
   // OTA updates
-  if(this->_use_ota()) ArduinoOTA.handle();
-  // mqtt client
-  if(this->_use_mqtt()) this->client.loop();
-  if(this->_use_mqtt()) this->_reconnectMQTT();
-  // ESP functions
+  this->_thisWifiConnected = this->wifiConnected();
+  if(this->_thisWifiConnected){
+    // Serial.println("loop");
+    if(this->_use_ota()) ArduinoOTA.handle();
+    // mqtt client
+    if(this->_use_mqtt()){
+      this->client.loop();
+      this->_reconnectMQTT();
+    }
+  }
+  // so next time we can see if we have reconneted / connected for first time
+  this->_lastWifiConnected = this->_thisWifiConnected;
+
+  if(!this->wifiConnected() && millis() - this->_wifi_start > ((uint32_t) this->wifi_watchdog_seconds) * 1000){
+    // it has been too long since we initiated WiFi, try again
+    Serial.println("WiFi has taken too long to connect, trying again");
+    ESP.restart();
+  }
+
   yield();
 }
 
@@ -57,18 +77,21 @@ void IOThing::useOTA(){
 }
 
 void IOThing::useWiFi(char * ssid, char * password){
+  strncpy(this->_wifi_passcode, "", 32);
+  strncpy(this->_wifi_ssid, "", 32);
   Serial.println("Connecting to WiFi");
   WiFi.mode(WIFI_STA);
   Serial.println("Wifi begin for " + String(ssid) + ":"+ String(password));
   WiFi.hostname(this->_hostname);
   WiFi.begin(ssid, password);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed! Rebooting...");
-    delay(5000);
-    ESP.restart();
-  }
-  Serial.println("Wifi OK");
-  Serial.println(WiFi.localIP());
+  this->_wifi_start = millis();
+  //while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+  //  Serial.println("Connection Failed.");
+  //  //delay(5000);
+  //  //ESP.restart();
+  //}
+  //Serial.println("Wifi OK");
+  //Serial.println(WiFi.localIP());
 }
 
 void IOThing::_iot_settings_callback(String topic, String payload){
@@ -149,14 +172,17 @@ int IOThing::_mqtt_client_connect(){
 }
 
 void IOThing::_reconnectMQTT(){
-  if (!this->client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    if (this->_mqtt_client_connect()) {
-      this->_mqtt_state = IOT_MQTT_CONNECTED;
-      this->client.subscribe((String(this->_hostname) + "/settings/#").c_str());
-    }
+  // if we haven't just connected to WiFi, abort
+  if(!this->_thisWifiConnected || this->client.connected()){
+    return;
   }
+  Serial.print("Attempting MQTT connection...");
+  // Attempt to connect
+  if (this->_mqtt_client_connect()) {
+    this->_mqtt_state = IOT_MQTT_CONNECTED;
+    this->client.subscribe((String(this->_hostname) + "/settings/#").c_str());
+  }
+
 }
 
 void IOThing::useMQTT(char * server, uint16_t port, char * username, char * password, IOT_MQTT_CALLBACK_SIGNATURE settings_callback){
@@ -168,6 +194,7 @@ void IOThing::useMQTT(char * server, uint16_t port, char * username, char * pass
 
 void IOThing::useMQTT(char * server, IOT_MQTT_CALLBACK_SIGNATURE settings_callback){ //char * topic, IOT_MQTT_CALLBACK_SIGNATURE callback){
   // setup MQTT connection
+  this->_mqtt_state = IOT_MQTT_ENABLED;
   this->client = PubSubClient(this->espClient);
   this->client.setServer(server, this->_mqtt_port ? this->_mqtt_port : 1883);
   this->client.setCallback([&](char *topic, byte *data, unsigned int len) {
@@ -226,6 +253,10 @@ bool IOThing::ntpSynced() {
     this->_ntp_state = IOT_NTP_SYNC;
   }
   return this->_ntp_state == IOT_NTP_SYNC;
+}
+
+bool IOThing::wifiConnected() {
+  return WiFi.status() == WL_CONNECTED;
 }
 
 void IOThing::useNTP(char * server){
