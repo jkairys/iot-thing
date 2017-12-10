@@ -31,6 +31,7 @@ void IOThing::loop(){
 void IOThing::useOTA(){
   ArduinoOTA.setHostname(this->_hostname);
   ArduinoOTA.onStart([&]() {
+    noInterrupts();
     this->_ota_state = IOT_OTA_PROGRESS;
     //Serial.println("Start");
   });
