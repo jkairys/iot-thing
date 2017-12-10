@@ -25,9 +25,10 @@
 #define IOT_NTP_SYNC 2
 
 #define IOT_MQTT_DISABLED 0
-#define IOT_MQTT_DISCONNECTED 1
-#define IOT_MQTT_CONNECTING 2
-#define IOT_MQTT_CONNECTED 3
+#define IOT_MQTT_ENABLED 1
+#define IOT_MQTT_DISCONNECTED 2
+#define IOT_MQTT_CONNECTING 3
+#define IOT_MQTT_CONNECTED 4
 
 #define IOT_OTA_DISABLED 0
 #define IOT_OTA_READY 1
@@ -75,12 +76,20 @@ private:
 
   bool _mqtt_topics_map[IOT_MAX_MQTT_SUBSCRIPTIONS];
 
+  bool _thisWifiConnected;
+  bool _lastWifiConnected;
+
   char _mqtt_user[32];
   char _mqtt_password[32];
   uint16_t _mqtt_port;
 
+  uint32_t _wifi_start;
+  char _wifi_ssid[32];
+  char _wifi_passcode[32];
+
 
 public:
+  uint32_t wifi_watchdog_seconds;
   int8_t _timezone = 10;
   bool _dst = false;
 
@@ -101,6 +110,7 @@ public:
   void _log(String msg);
   void _log(char * msg);
   bool ntpSynced();
+  bool wifiConnected();
 };
 
 /*
