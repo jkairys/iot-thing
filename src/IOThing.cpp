@@ -179,8 +179,16 @@ void IOThing::_reconnectMQTT(){
   Serial.print("Attempting MQTT connection...");
   // Attempt to connect
   if (this->_mqtt_client_connect()) {
+    Serial.println("Subscribing to settings topic");
     this->_mqtt_state = IOT_MQTT_CONNECTED;
     this->client.subscribe((String(this->_hostname) + "/settings/#").c_str());
+    if(this->_subscriptionCount() > 0){
+      Serial.println("Subscribing to other topics");
+    }
+    int topicNumber = 0;
+    for(int topicNumber = 0; topicNumber < this->_subscriptionCount(); topicNumber ++){
+      this->client.subscribe(this->_mqtt_topics[topicNumber]);
+    }
   }
 
 }
